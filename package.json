@@ -1,0 +1,87 @@
+{
+  "name": "acb-launcher",
+  "version": "1.0.0",
+  "description": "Official launcher for Assassins' Network — the community Assassin's Creed Brotherhood multiplayer mod.",
+  "main": "main.js",
+  "author": "Assassins' Network",
+  "homepage": "https://assassins.network",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ACBMP/electron-launcher.git"
+  },
+  "scripts": {
+    "start": "electron .",
+    "build:css": "tailwindcss -i src/input.css -o vendor/tailwind.css --minify",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "release": "electron-builder --publish always"
+  },
+  "keywords": [
+    "assassins-creed",
+    "brotherhood",
+    "launcher",
+    "electron"
+  ],
+  "type": "commonjs",
+  "dependencies": {
+    "electron-updater": "^6.3.9"
+  },
+  "devDependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource-variable/jetbrains-mono": "^5.3.0",
+    "@tailwindcss/container-queries": "^0.1.1",
+    "@tailwindcss/forms": "^0.5.11",
+    "chart.js": "^4.5.1",
+    "electron": "^41.1.0",
+    "electron-builder": "^25.1.8",
+    "material-symbols": "^0.47.0",
+    "tailwindcss": "^3.4.19"
+  },
+  "build": {
+    "appId": "network.assassins.launcher",
+    "productName": "Assassins' Network Launcher",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "artifactName": "${name}-${version}.${ext}",
+    "files": [
+      "**/*",
+      "!dist/**",
+      "!docs/**",
+      "!.claude/**",
+      "!.github/**",
+      "!src/**",
+      "!tailwind.config.js",
+      "!tags",
+      "!**/*.md"
+    ],
+    "publish": {
+      "provider": "github",
+      "owner": "ACBMP",
+      "repo": "electron-launcher"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "build/icon.png",
+      "category": "Game",
+      "maintainer": "Assassins' Network <contact@assassins.network>"
+    }
+  }
+}

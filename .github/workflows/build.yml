@@ -1,0 +1,49 @@
+name: Build
+
+# CI safety net: make sure the app still packages on both platforms for every
+# push/PR to master. Does not publish. Uploads the installers as artifacts so
+# they can be downloaded and tested from the run.
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: --linux
+          - os: windows-latest
+            platform: --win
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # Recompile the Tailwind bundle so the artifact always matches source,
+      # even if the committed vendor/tailwind.css is stale.
+      - run: npm run build:css
+
+      - name: Package (no publish)
+        run: npx electron-builder ${{ matrix.platform }} --publish never
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installers-${{ matrix.os }}
+          path: |
+            dist/*.exe
+            dist/*.AppImage
+            dist/*.deb
+          if-no-files-found: ignore
+          retention-days: 7

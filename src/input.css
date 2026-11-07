@@ -1,0 +1,35 @@
+/* Tailwind compile input. Produces vendor/tailwind.css (see `npm run build:css`).
+   Fonts are loaded separately via vendor/fonts.css. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    body {
+        background-color: #0c0e12;
+        color: #e2e2e8;
+        font-family: 'Inter', sans-serif;
+    }
+}
+
+/* Thin, cyan-tinted scrollbars to match the site's chrome. */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0c0e12; }
+::-webkit-scrollbar-thumb { background: #282a2e; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #333539; }
+
+/* Decorative backgrounds (used by the play/login screens). */
+.digital-brutalist-grid {
+    background-image: linear-gradient(to right, #14171d 1px, transparent 1px),
+        linear-gradient(to bottom, #14171d 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+.digital-brutalist-bg {
+    background-image: radial-gradient(circle at 2px 2px, #171a20 1px, transparent 0);
+    background-size: 24px 24px;
+}
+
+/* Offset accent shadow (play-page toast). */
+.brutalist-shadow {
+    box-shadow: 4px 4px 0 rgba(0, 245, 255, 0.15);
+}

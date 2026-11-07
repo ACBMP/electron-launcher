@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+        <meta charset="utf-8"/>
+        <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+        <title>ASSASSINS NETWORK | PLAY</title>
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https:; connect-src https://api.assassins.network https://*.assassins.network; base-uri 'none'; form-action 'none'"/>
+        <link href="vendor/fonts.css" rel="stylesheet"/>
+        <link href="vendor/tailwind.css" rel="stylesheet"/>
+    </head>
+    <body class="bg-surface text-on-surface overflow-hidden selection:bg-primary selection:text-on-primary">
+        <!-- TopAppBar -->
+        <header class="fixed top-0 left-0 w-full z-50 bg-surface-container-low/85 backdrop-blur-md border-b border-outline-variant/60 flex justify-between items-center px-8 py-6">
+            <div class="flex items-center h-full">
+                <img
+                        src="assets/an_logo_white.png"
+                        alt="AN Logo"
+                        class="h-10 object-contain drop-shadow-[0_0_12px_rgba(0,245,255,0.35)]"
+                        >
+            </div>
+                <nav class="absolute left-1/2 transform -translate-x-1/2 hidden md:flex items-center space-x-12">
+                    <a class="font-headline uppercase tracking-tighter font-bold text-sm text-white border-b-2 border-white pb-1 active:scale-95 transition-transform" href="#" onclick="window.api.openPlayPage()">PLAY</a>
+                    <a class="font-headline uppercase tracking-tighter font-bold text-sm text-zinc-500 hover:text-zinc-300 transition-colors active:scale-95 transition-transform" href="#" onclick="window.api.openStatsPage()">AN</a>
+                    <a class="font-headline uppercase tracking-tighter font-bold text-sm text-zinc-500 hover:text-zinc-300 transition-colors active:scale-95 transition-transform" href="#" onclick="window.api.openNewsPage()">NEWS</a>
+                    <a class="font-headline uppercase tracking-tighter font-bold text-sm text-zinc-500 hover:text-zinc-300 transition-colors active:scale-95 transition-transform" href="#" onclick="window.api.openSettingsPage()">SETTINGS</a>
+                </nav>
+                <div class="flex items-center space-x-6">
+                    <button class="material-symbols-outlined text-white hover:bg-zinc-800 transition-all duration-150 p-2 active:scale-95" data-icon="groups" id="discordButton">groups</button>
+                    <button class="material-symbols-outlined text-white hover:bg-zinc-800 transition-all duration-150 p-2 active:scale-95" data-icon="language" id="websiteButton" onclick="window.api.openExternal(`https://assassins.network`)">language</button>
+                </div>
+        </header>
+        <!-- Main Canvas -->
+        <main class="relative min-h-screen pt-24 pb-12 px-8 flex flex-col justify-center digital-brutalist-grid">
+            <!-- Background Hero Element (Subtle Texture). Loaded by script so a
+                 missing or unreachable image falls back to plain black. -->
+            <div class="absolute inset-0 z-0 pointer-events-none overflow-hidden" id="heroBackground">
+                <div class="w-full h-full bg-cover bg-center grayscale contrast-125 opacity-20" id="heroImage"></div>
+            </div>
+
+            <!-- TOAST NOTIFICATION -->
+            <div class="fixed top-20 right-6 z-[100] animate-bounce hidden" id="notificationPopup">
+                <div class="bg-surface-container text-on-surface p-3 pr-4 flex items-center gap-4 border-2 border-white brutalist-shadow">
+                    <span class="material-symbols-outlined text-[20px]">priority_high</span>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-bold tracking-tighter leading-none mb-1">NEWS</span>
+                        <span class="text-xs font-bold leading-none uppercase" id="notificationTitle">ERROR</span>
+                    </div>
+                    <button class="bg-on-surface text-black px-3 py-1 text-[10px] font-bold hover:invert transition-all" id="readNotification" onclick="window.api.openNewsPage()">READ</button>
+                </div>
+            </div>
+            <!-- LAUNCHER UPDATE BANNER -->
+            <div class="fixed top-[92px] left-0 w-full z-[90] px-8 hidden" id="updateBanner">
+                <div class="bg-surface-container border-l-4 border-primary brutalist-shadow flex items-center gap-4 px-5 py-3" id="updateBannerInner">
+                    <span class="material-symbols-outlined text-primary text-[20px]" id="updateIcon">system_update_alt</span>
+                    <div class="flex flex-col min-w-0 flex-grow">
+                        <span class="font-headline text-xs font-bold uppercase tracking-tighter text-white" id="updateTitle">Update available</span>
+                        <span class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant truncate" id="updateDetail"></span>
+                    </div>
+                    <button class="bg-primary text-on-primary px-4 py-2 font-label text-[10px] font-bold uppercase tracking-widest hover:bg-secondary-fixed-dim transition-colors hidden" id="updateAction"></button>
+                    <button class="material-symbols-outlined text-on-surface-variant hover:text-white text-[18px]" id="updateDismiss" title="Dismiss">close</button>
+                </div>
+            </div>
+
+            <div class="relative z-10 grid grid-cols-12 gap-0 border-l border-outline-variant/15">
+                <!-- Left Header Section (Asymmetric) -->
+                <div class="col-span-12 md:col-span-7 bg-surface-container-low p-12 border-b border-r border-outline-variant/15">
+                    <div class="mb-4 flex items-center gap-4">
+                        <span class="w-3 h-3 bg-primary block"></span>
+                        <span class="label-sm font-label uppercase tracking-[0.2em] text-on-surface-variant">Assassin's Creed Brotherhood</span>
+                    </div>
+                    <h1 class="font-headline text-8xl md:text-[9rem] font-black tracking-tighter leading-[0.8] mb-8 text-white">
+                        AN PLAY
+                    </h1>
+                    <div class="grid grid-cols-2 gap-8 mt-16">
+                        <div class="space-y-2">
+                            <p class="label-sm font-label uppercase tracking-widest text-on-surface-variant">PATCH STATUS</p>
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-primary" data-icon="check_circle">check_circle</span>
+                                <span id="patchStatus" class="font-headline text-xl font-bold tracking-tight uppercase">
+                                    CHECKING...
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Right Interaction Section -->
+                <div class="col-span-12 md:col-span-5 flex flex-col">
+                    <!-- Dropdown / Identifier Selection -->
+                    <div class="bg-surface-container p-12 flex-grow border-b border-outline-variant/15 flex flex-col justify-end">
+                        <label class="label-sm font-label uppercase tracking-[0.2em] text-on-surface-variant mb-4 block">SELECT USERNAME</label>
+                        <div class="relative group">
+                            <div id="usernameDropdown"
+                                 class="bg-surface-container-lowest p-6 flex justify-between items-center cursor-pointer border-l-4 border-primary group-hover:bg-surface-container-high transition-colors">
+                                <span id="selectedUser" class="font-headline text-2xl font-bold tracking-tighter uppercase text-white">
+                                    LOADING...
+                                </span>
+                                <span class="material-symbols-outlined">expand_more</span>
+                            </div>
+
+                            <div id="usernameList" class="mt-2 space-y-1 hidden"></div>
+                        </div>
+                    </div>
+                    <!-- Main Action -->
+                    <button class="bg-primary group text-on-primary p-12 flex justify-between items-center transition-all duration-150 hover:bg-secondary-fixed-dim active:scale-[0.98]" onclick="handleAction()" id="playBtn">
+                        <span class="font-headline text-6xl font-black tracking-tighter uppercase">CHECKING</span>
+                        <span class="material-symbols-outlined text-5xl transform group-hover:translate-x-2 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+                    </button>
+                </div>
+            </div>
+            <!-- System Meta Data (Footer-like sub content) -->
+            <div class="mt-8 flex justify-between items-end border-l border-outline-variant/15 pl-12">
+                <div class="space-y-1">
+                    <p class="font-label text-[10px] text-zinc-600 uppercase tracking-[0.3em]">Status</p>
+                    <div class="flex gap-1">
+                        <div class="w-1 h-4 bg-zinc-800"></div>
+                        <div class="w-1 h-4 bg-zinc-800"></div>
+                        <div class="w-1 h-4 bg-primary"></div>
+                        <div class="w-1 h-4 bg-zinc-800"></div>
+                        <div class="w-1 h-4 bg-zinc-800"></div>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="flex items-center gap-2 text-on-surface-variant mb-1">
+                        <span class="material-symbols-outlined text-xs" data-icon="settings_input_antenna">settings_input_antenna</span>
+                        <p class="font-label text-[10px] uppercase tracking-widest">Connection</p>
+                    </div>
+                    <p class="font-label text-[10px] text-zinc-700 uppercase" id="versionLabel">Launcher</p>
+                </div>
+            </div>
+        </main>
+        <!-- Footer -->
+        <footer class="fixed bottom-0 left-0 w-full flex justify-between items-center px-8 py-3 z-50 bg-surface-container-low/85 backdrop-blur-md border-t border-outline-variant/60">
+            <div class="font-inter text-[10px] uppercase tracking-[0.2em] font-medium text-zinc-100 dark:text-zinc-200" id="footerText">
+            </div>
+            <div class="flex space-x-8">
+                <a class="font-inter text-[10px] uppercase tracking-[0.2em] font-medium text-zinc-600 hover:text-white transition-colors cursor-pointer" onclick="window.api.openExternal('https://assassins.network')">Website</a>
+                <a class="font-inter text-[10px] uppercase tracking-[0.2em] font-medium text-zinc-600 hover:text-white transition-colors cursor-pointer" onclick="window.api.openExternal('https://discord.gg/Th5rm6qz5u')">Discord</a>
+            </div>
+        </footer>
+        <script>
+            const HERO_IMAGE = "https://assassins.network/static/background.png";
+
+            const hero = new Image();
+            hero.onload = () => {
+                document.getElementById("heroImage").style.backgroundImage = `url("${HERO_IMAGE}")`;
+            };
+            hero.onerror = () => {
+                document.getElementById("heroBackground").classList.add("bg-black");
+            };
+            hero.src = HERO_IMAGE;
+
+            document.querySelectorAll("[data-url]").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    window.api.openExternal(btn.dataset.url);
+                });
+            });
+            function renderUsernames(data, chosen) {
+                const selected = document.getElementById("selectedUser");
+                const list = document.getElementById("usernameList");
+
+                if (!selected || !list) {
+                    console.error("Dropdown elements not found");
+                    return;
+                }
+
+                list.innerHTML = "";
+
+                const names = [data.name, ...(data.ign || [])];
+
+                selected.innerText = chosen;
+
+                names.forEach(name => {
+                    const btn = document.createElement("button");
+
+                    btn.className = "w-full text-left px-4 py-2 text-sm font-label uppercase tracking-widest text-on-surface hover:bg-surface-container-highest transition-colors";
+
+                    btn.innerText = name;
+
+                    btn.onclick = async () => {
+                        selected.innerText = name;
+                        list.classList.add("hidden");
+                        config.selectedUser = name;
+                        await window.api.setConfig(config);
+                    };
+
+                    list.appendChild(btn);
+                });
+            }
+
+            async function loadStats(config) {
+                const username = config.selectedUser || config.username;
+
+                const data = await window.api.getStats(config.username, "escort");
+
+                if (!data) {
+                    console.error("No data returned");
+                    return;
+                }
+
+                renderUsernames(data, username);
+            }
+
+            document.addEventListener("DOMContentLoaded", async () => {
+                const dropdown = document.getElementById("usernameDropdown");
+                const notificationPopup = document.getElementById("notificationPopup");
+                const notificationTitle = document.getElementById("notificationTitle");
+                const config = await window.api.getConfig();
+
+                if (dropdown) {
+                    dropdown.addEventListener("click", () => {
+                        document.getElementById("usernameList").classList.toggle("hidden");
+                    });
+                }
+
+                document.getElementById("discordButton").addEventListener("click", () => {
+                    window.api.openExternal("https://discord.gg/Th5rm6qz5u");
+                });
+
+                document.getElementById("websiteButton").addEventListener("click", () => {
+                    window.api.openExternal("https://assassins.network");
+                });
+                loadStats(config);
+
+                const res = await fetch("https://api.assassins.network/news/latest");
+                console.log(res);
+                if (res.ok) {
+                    const latestNews = await res.json();
+                    console.log(latestNews);
+                    console.log(latestNews._id);
+                    if (!config.lastSeenNews || latestNews._id != config.lastSeenNews) {
+                        notificationPopup.classList.remove("hidden");
+                        notificationTitle.textContent = latestNews.title;
+                    }
+                }
+            });
+            let state = "loading";
+            let config = {};
+
+            // Set when the API reports this build is older than the minimum it
+            // still supports. Overrides every other state: an unsupported
+            // launcher must not be able to start the game.
+            let launcherUpdateRequired = false;
+
+            async function loadConfig() {
+                config = await window.api.getConfig();
+            }
+
+            // --- Launcher update banner -----------------------------------
+            const updateEls = () => ({
+                banner: document.getElementById("updateBanner"),
+                title: document.getElementById("updateTitle"),
+                detail: document.getElementById("updateDetail"),
+                action: document.getElementById("updateAction"),
+                dismiss: document.getElementById("updateDismiss"),
+                icon: document.getElementById("updateIcon"),
+            });
+
+            function showUpdateBanner({ title, detail, actionLabel, onAction, dismissible = true, icon = "system_update_alt" }) {
+                const el = updateEls();
+                el.title.innerText = title;
+                el.detail.innerText = detail || "";
+                el.icon.innerText = icon;
+
+                if (actionLabel) {
+                    el.action.innerText = actionLabel;
+                    el.action.classList.remove("hidden");
+                    el.action.onclick = onAction;
+                } else {
+                    el.action.classList.add("hidden");
+                }
+
+                // A required update can't be dismissed — hiding it would leave
+                // a blocked Play button with no explanation.
+                el.dismiss.classList.toggle("hidden", !dismissible);
+                el.banner.classList.remove("hidden");
+            }
+
+            async function checkLauncherUpdate() {
+                const version = await window.api.getAppVersion();
+                document.getElementById("versionLabel").innerText = `Launcher v${version}`;
+
+                const info = await window.api.checkLauncherUpdate();
+
+                // Version service unreachable: fail open and say nothing.
+                if (info.unavailable) {
+                    return;
+                }
+
+                if (info.updateRequired) {
+                    launcherUpdateRequired = true;
+                    showUpdateBanner({
+                        icon: "error",
+                        title: `Update required — v${info.version}`,
+                        detail: info.notes || `Version ${version} is no longer supported.`,
+                        actionLabel: "Download",
+                        onAction: () => window.api.openExternal(info.url),
+                        dismissible: false,
+                    });
+                    updateButton();
+                    return;
+                }
+
+                if (info.updateAvailable) {
+                    showUpdateBanner({
+                        title: `Update available — v${info.version}`,
+                        detail: info.notes || "A newer launcher is ready.",
+                        actionLabel: "Download",
+                        onAction: () => window.api.openExternal(info.url),
+                    });
+                }
+            }
+
+            // electron-updater is doing the actual download in the background;
+            // reflect its progress in the same banner.
+            window.api.onUpdateStatus(status => {
+                if (status.state === "downloading") {
+                    showUpdateBanner({
+                        title: "Downloading update",
+                        detail: `${status.percent}% complete`,
+                        dismissible: false,
+                    });
+                } else if (status.state === "ready") {
+                    showUpdateBanner({
+                        icon: "task_alt",
+                        title: `Update v${status.version} ready`,
+                        detail: "Restart the launcher to finish installing.",
+                        actionLabel: "Restart now",
+                        onAction: () => window.api.installUpdate(),
+                        dismissible: !launcherUpdateRequired,
+                    });
+                }
+            });
+
+            document.getElementById("updateDismiss").addEventListener("click", () => {
+                document.getElementById("updateBanner").classList.add("hidden");
+            });
+
+            // On Linux the game runs under Wine/Proton, which the player
+            // starts themselves. The button then only writes the game's
+            // config, so it shouldn't promise to launch anything.
+            const launchesGame = window.api.platform === "win32";
+
+            async function loadStatus() {
+                await loadConfig();
+                const patch = await window.api.patchCheck("acb");
+
+                const patchEl = document.getElementById("patchStatus");
+
+                if (!patch.installed) {
+                    patchEl.innerText = "NOT INSTALLED";
+                    state = "install";
+                } else if (!patch.upToDate) {
+                    patchEl.innerText = "UPDATE REQUIRED";
+                    state = "update";
+                } else {
+                    patchEl.innerText = "UP TO DATE";
+                    state = "play";
+                }
+
+                updateButton();
+            }
+
+            function updateButton() {
+                const btn = document.getElementById("playBtn");
+                const text = btn.querySelector("span");
+
+                // A launcher below the minimum supported version can't play,
+                // whatever the patch state says.
+                if (launcherUpdateRequired) {
+                    text.innerText = "UPDATE LAUNCHER";
+                    btn.classList.add("opacity-60");
+                    return;
+                }
+
+                btn.classList.remove("opacity-60");
+
+                switch (state) {
+                    case "install": text.innerText = "INSTALL"; break;
+                    case "update": text.innerText = "UPDATE"; break;
+                    case "play": text.innerText = launchesGame ? "PLAY" : "PREPARE"; break;
+                    default: text.innerText = "LOADING..."; break;
+                }
+            }
+
+            async function handleAction() {
+                const config = await window.api.getConfig();
+
+                // Route the button to the download instead of the game while
+                // this build is unsupported.
+                if (launcherUpdateRequired) {
+                    const info = await window.api.checkLauncherUpdate();
+                    await window.api.openExternal(
+                        info.url || "https://github.com/ACBMP/electron-launcher/releases/latest",
+                    );
+                    return;
+                }
+
+                if (state === "install") {
+                    await window.api.openSettingsPage();
+                } else if (state === "update") {
+                    await window.api.openSettingsPage();
+                } else if (state === "play") {
+                    const selected = document.getElementById("selectedUser");
+                    const res = await window.api.launchGame(config, selected.innerText);
+                    if (!res.success) {
+                        alert(res.error || "Could not launch the game");
+                    } else if (res.manual) {
+                        showUpdateBanner({
+                            icon: "task_alt",
+                            title: `Ready as ${selected.innerText}`,
+                            detail: "Now start ACBMP.exe through Wine or Proton.",
+                        });
+                    }
+                }
+            }
+
+            loadStatus();
+            checkLauncherUpdate();
+
+        </script>
+    </body></html>

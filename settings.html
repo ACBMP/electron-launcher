@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+        <meta charset="utf-8"/>
+        <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+        <title>AN: Settings</title>
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https:; connect-src https://api.assassins.network https://*.assassins.network; base-uri 'none'; form-action 'none'"/>
+        <link href="vendor/fonts.css" rel="stylesheet"/>
+        <link href="vendor/tailwind.css" rel="stylesheet"/>
+    </head>
+    <!-- The layout is designed wide; in a small window the aside runs past the
+         fold, so the page has to scroll rather than clip. The header and footer
+         are fixed, so they stay put while it does. -->
+    <body class="bg-surface text-on-surface font-body selection:bg-primary selection:text-on-primary min-h-screen flex flex-col overflow-y-auto">
+        <header class="fixed top-0 left-0 w-full z-50 bg-surface-container-low/85 backdrop-blur-md border-b border-outline-variant/60 flex justify-between items-center px-8 py-6">
+            <div class="flex items-center h-full">
+                <img
+                        src="assets/an_logo_white.png"
+                        alt="AN Logo"
+                        class="h-10 object-contain drop-shadow-[0_0_12px_rgba(0,245,255,0.35)]"
+                        >
+            </div>
+            <nav class="absolute left-1/2 transform -translate-x-1/2 hidden md:flex items-center space-x-12">
+                <a class="font-headline uppercase tracking-tighter font-bold text-sm text-zinc-500 hover:text-zinc-300 transition-colors active:scale-95 transition-transform" href="#" onclick="window.api.openPlayPage()">PLAY</a>
+                <a class="font-headline uppercase tracking-tighter font-bold text-sm text-zinc-500 hover:text-zinc-300 transition-colors active:scale-95 transition-transform" href="#" onclick="window.api.openStatsPage()">AN</a>
+                <a class="font-headline uppercase tracking-tighter font-bold text-sm text-zinc-500 hover:text-zinc-300 transition-colors active:scale-95 transition-transform" href="#" onclick="window.api.openNewsPage()">NEWS</a>
+                <a class="font-headline uppercase tracking-tighter font-bold text-sm text-white border-b-2 border-white pb-1 active:scale-95 transition-transform" href="#" onclick="window.api.openSettingsPage()">SETTINGS</a>
+            </nav>
+            <div class="flex items-center space-x-6">
+                <button class="material-symbols-outlined text-white hover:bg-zinc-800 transition-all duration-150 p-2 active:scale-95" data-icon="groups" id="discordButton">groups</button>
+                <button class="material-symbols-outlined text-white hover:bg-zinc-800 transition-all duration-150 p-2 active:scale-95" data-icon="language" id="websiteButton">language</button>
+            </div>
+        </header>
+        <main class="flex-grow pt-32 pb-20 px-8 max-w-[1440px] mx-auto w-full grid grid-cols-12 gap-8 items-start">
+            <aside class="col-span-12 lg:col-span-4 flex flex-col gap-8">
+                <div class="space-y-2">
+                    <h1 class="font-headline font-bold text-6xl tracking-tighter uppercase leading-none">AN: Settings</h1>
+                    <p class="font-label text-sm uppercase tracking-[0.2em] text-on-surface-variant">System Configuration &amp; Client Update</p>
+                </div>
+                <div class="bg-surface-container p-6 space-y-6">
+                    <!-- Install Directory -->
+                    <div class="space-y-4" id="installSettingsContainer"> <div class="flex flex-col gap-1"> <label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Install Directory</label>
+                            <div class="flex gap-2">
+                                <div class="flex-grow bg-surface-container-lowest px-4 py-3 flex items-center group">
+                                    <span class="material-symbols-outlined text-xs text-outline mr-2" data-icon="folder_open">folder_open</span>
+                                    <input id="installPathInput" class="bg-transparent border-none p-0 w-full text-xs font-mono focus:ring-0 text-secondary" readonly="" type="text" value=""/>
+                                </div>
+                                <button class="bg-surface-container-highest px-4 text-[10px] font-bold uppercase tracking-tighter hover:bg-secondary-fixed-dim transition-colors" id="changePathBtn">Change</button>
+                            </div>
+                        </div>
+                        <!-- Start Installation Button -->
+                        <div class="flex flex-col gap-4">
+                            <button id="installBtn" class="bg-primary text-on-primary py-3 font-headline font-bold uppercase tracking-widest text-sm hover:bg-secondary-fixed-dim transition-colors active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+>Install</button>
+                        </div>
+
+                        <!-- Game options. Read from, and written back into, the
+                             game's own .ini files by main.js. -->
+                        <div class="pt-6 mt-2 border-t border-outline-variant/15 flex flex-col gap-4">
+                            <div class="flex items-center justify-between">
+                                <label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Game Options</label>
+                                <span class="text-[10px] font-mono text-secondary" id="gameSettingsStatus"></span>
+                            </div>
+                            <div class="space-y-5" id="gameSettings"></div>
+                        </div>
+
+                        <!-- Launcher (not game) updates -->
+                        <div class="pt-6 mt-2 border-t border-outline-variant/15 flex flex-col gap-2">
+                            <div class="flex items-center justify-between">
+                                <label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Launcher</label>
+                                <span class="text-[10px] font-mono text-secondary" id="launcherVersion">-</span>
+                            </div>
+                            <p class="text-[10px] text-on-surface-variant" id="launcherUpdateStatus">Checking for updates…</p>
+                            <button id="launcherUpdateBtn" class="bg-surface-container-highest py-2 font-label text-[10px] font-bold uppercase tracking-widest hover:bg-secondary-fixed-dim transition-colors disabled:opacity-50">Check for updates</button>
+                        </div>
+                    </div>
+
+            </aside>
+            <section class="col-span-12 lg:col-span-8 h-full flex flex-col gap-4">
+                <div class="bg-surface-container-lowest flex items-center justify-between px-6 py-4">
+                    <div class="flex items-center gap-4">
+                        <span class="material-symbols-outlined text-primary" data-icon="terminal">terminal</span>
+                        <span class="font-headline font-bold text-lg uppercase tracking-tighter">Patching Status Logs</span>
+                    </div>
+                    <div class="flex gap-4">
+                        <!-- <div class="flex items-center gap-2"> -->
+                        <!--     <span class="text-[10px] font-bold text-on-surface-variant">Uptime:</span> -->
+                        <!--     <span class="text-[10px] font-mono text-primary" id="uptime">04:22:18</span> -->
+                        <!-- </div> -->
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-bold text-on-surface-variant">Version:</span>
+                            <span class="text-[10px] font-mono text-primary" id="remotePatchVersion">-</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-surface-container-lowest flex-grow p-6 font-mono text-xs space-y-2 overflow-y-auto max-h-[614px]" id="logContainer">
+                </div>
+                <div class="bg-surface-container p-6">
+                    <div class="flex justify-between items-end">
+                        <div class="space-y-4 w-1/2">
+                            <div class="flex justify-between text-[10px] font-bold uppercase tracking-widest">
+                                <span>Patch Status</span>
+                                <span class="text-primary" id="installStatus"></span>
+                            </div>
+                            <div class="h-1 bg-surface-container-lowest w-full relative">
+                                <div class="absolute inset-0 bg-primary w-0 shadow-[0_0_10px_rgba(0,245,255,0.35)]" id="installProgress"></div>
+                            </div>
+                        </div>
+                        <div class="flex gap-6">
+                            <div class="text-right">
+                                <p class="text-[10px] font-bold text-on-surface-variant uppercase">Downloaded</p>
+                                <p class="font-headline font-bold text-2xl" id="installSize">0 B</p></div>
+                            <div class="text-right">
+                                <p class="text-[10px] font-bold text-on-surface-variant uppercase">Speed</p>
+                                <p class="font-headline font-bold text-2xl" id="installSpeed">0 MB/s</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        <!-- Footer -->
+        <footer class="fixed bottom-0 left-0 w-full flex justify-between items-center px-8 py-3 z-50 bg-surface-container-low/85 backdrop-blur-md border-t border-outline-variant/60">
+            <div class="font-inter text-[10px] uppercase tracking-[0.2em] font-medium text-zinc-100 dark:text-zinc-200" id="footerText">
+            </div>
+            <div class="flex space-x-8">
+                <a class="font-inter text-[10px] uppercase tracking-[0.2em] font-medium text-zinc-600 hover:text-white transition-colors cursor-pointer" onclick="window.api.openExternal('https://assassins.network')">Website</a>
+                <a class="font-inter text-[10px] uppercase tracking-[0.2em] font-medium text-zinc-600 hover:text-white transition-colors cursor-pointer" onclick="window.api.openExternal('https://discord.gg/Th5rm6qz5u')">Discord</a>
+            </div>
+        </footer>
+        <div class="fixed top-0 right-0 w-px h-full bg-outline-variant opacity-10 pointer-events-none"></div>
+        <div class="fixed top-0 left-1/4 w-px h-full bg-outline-variant opacity-5 pointer-events-none"></div>
+        <div class="fixed top-0 left-2/4 w-px h-full bg-outline-variant opacity-5 pointer-events-none"></div>
+        <div class="fixed top-0 left-3/4 w-px h-full bg-outline-variant opacity-5 pointer-events-none"></div>
+        <script>
+            // settings.js (or inside a <script> in your settings page)
+            document.addEventListener("DOMContentLoaded", async () => {
+                const config = await window.api.getConfig();
+                // Elements
+                const installPathInput = document.getElementById("installPathInput");
+                if (!config.installPath) {
+                    config.installPath = await window.api.detectGamePath();
+                }
+                installPathInput.value = config.installPath || "";
+                const changePathBtn = document.getElementById("changePathBtn");
+                const installBtn = document.getElementById("installBtn");
+                if (!config.installPath) {
+                    installBtn.disabled = true;
+                }
+                const autoSaveIndicator = document.querySelector(".animate-pulse");
+                const installProgress = document.getElementById("installProgress");
+                const installStatus = document.getElementById("installStatus");
+                const installSpeed = document.getElementById("installSpeed");
+                const installSize = document.getElementById("installSize");
+                const logContainer = document.getElementById("logContainer");
+                const remotePatchVersion = document.getElementById("remotePatchVersion");
+
+                const installContainer = document.getElementById("installSettingsContainer");
+
+                document.getElementById("discordButton").addEventListener("click", () => {
+                    window.api.openExternal("https://discord.gg/Th5rm6qz5u");
+                });
+
+                document.getElementById("websiteButton").addEventListener("click", () => {
+                    window.api.openExternal("https://assassins.network");
+                });
+                document.querySelectorAll("[data-url]").forEach(btn => {
+                    btn.addEventListener("click", () => {
+                        window.api.openExternal(btn.dataset.url);
+                    });
+                });
+
+                // Change folder button
+                changePathBtn.addEventListener("click", async () => {
+                    const folder = await window.api.pickInstallDir();
+                    if (folder) {
+                        document.getElementById("installPathInput").value = folder;
+                        config.installPath = folder;
+                        await window.api.setConfig(config);
+                        installBtn.disabled = false;
+                    }
+                });
+
+                await initGameSettings();
+
+                function addLog(message, type = "secondary") {
+                    const timestamp = new Date().toLocaleTimeString([], {hour12: false});
+
+                    const entry = document.createElement("div");
+                    entry.className = "flex gap-4 text-on-surface-variant";
+
+                    const timeSpan = document.createElement("span");
+                    timeSpan.className = "w-20 shrink-0 opacity-50";
+                    timeSpan.textContent = `[${timestamp}]`;
+
+                    const messageSpan = document.createElement("span");
+                    messageSpan.className = `text-${type}`;
+                    messageSpan.textContent = message;
+
+                    entry.appendChild(timeSpan);
+                    entry.appendChild(messageSpan);
+
+                    logContainer.appendChild(entry);
+                    logContainer.scrollTop = logContainer.scrollHeight; // auto-scroll
+                }
+
+                window.api.onInstallLog((message, type) => {
+                    addLog(message, type);
+                });
+
+                const patch = await window.api.patchCheck("acb");
+                remotePatchVersion.innerText = patch.version;
+
+                // Start install click handler
+                installBtn.addEventListener("click", async () => {
+                    installBtn.disabled = true;
+                    installBtn.textContent = "Installing...";
+
+                    // Send install command to main process
+                    await window.api.setConfig(config);
+                    // An install can add or change the .ini files, and with
+                    // them the options on offer. A failed install already
+                    // reports itself through the progress readout.
+                    window.api.installGame(config, "acb").then(initGameSettings, () => {});
+
+                    // Listen for progress updates from main process
+                    window.api.onInstallProgress((data) => {
+                        installProgress.style.width = `${data.percent}%`;
+                        if (installStatus) installStatus.textContent = data.status;
+                        if (installSize) {
+                            installSize.textContent = `${formatBytes(data.downloadedBytes)}/${formatBytes(data.totalBytes)}`;
+                        }
+                        
+                        if (installSpeed) {
+                            installSpeed.textContent = `${formatBytes(data.speed)}/s`;
+                        }
+                    });
+                });
+            });
+
+            // --- Game options ------------------------------------------------
+            //
+            // main.js reads the options straight out of the game's .ini files
+            // (patch.ini, ac_relay.ini, ...), so whatever the installed patch
+            // offers shows up here without a launcher change. Each option comes
+            // with its inferred type and current value.
+            async function initGameSettings() {
+                const container = document.getElementById("gameSettings");
+                const statusEl = document.getElementById("gameSettingsStatus");
+
+                const options = await window.api.getGameSettings("acb");
+                container.replaceChildren();
+
+                if (options.length === 0) {
+                    const empty = document.createElement("p");
+                    empty.className = "text-[10px] text-zinc-600";
+                    empty.textContent = "Options appear once the game files are available.";
+                    container.appendChild(empty);
+                    return;
+                }
+
+                let saveTimer;
+                let pending = {};
+
+                // Debounced: dragging a slider or typing would otherwise
+                // rewrite the .ini file on every change.
+                function save(key, value) {
+                    pending[key] = value;
+                    statusEl.textContent = "";
+                    clearTimeout(saveTimer);
+
+                    saveTimer = setTimeout(async () => {
+                        const batch = pending;
+                        pending = {};
+
+                        const res = await window.api.setGameSettings("acb", batch);
+
+                        // A failure here means the choice was remembered but
+                        // couldn't be written to disk — usually because the game
+                        // isn't installed yet, in which case installing applies
+                        // it anyway. Say so instead of claiming success.
+                        statusEl.textContent = res.success ? "SAVED" : "SAVED, NOT YET APPLIED";
+                    }, 250);
+                }
+
+                function label(option, htmlFor) {
+                    const wrapper = document.createElement("div");
+                    wrapper.className = "flex flex-col";
+
+                    const text = document.createElement("label");
+                    text.className = "text-[10px] font-bold uppercase tracking-widest text-on-surface-variant";
+                    text.textContent = option.label;
+                    if (htmlFor) text.htmlFor = htmlFor;
+                    wrapper.appendChild(text);
+
+                    if (option.help) {
+                        const help = document.createElement("span");
+                        help.className = "text-[10px] text-zinc-600 normal-case tracking-normal";
+                        help.textContent = option.help;
+                        wrapper.appendChild(help);
+                    }
+
+                    return wrapper;
+                }
+
+                function control(option) {
+                    const id = `setting-${option.key.replace(/[^A-Za-z0-9]/g, "-")}`;
+                    const row = document.createElement("div");
+
+                    if (option.type === "bool") {
+                        row.className = "flex items-start gap-3";
+
+                        const input = document.createElement("input");
+                        input.type = "checkbox";
+                        input.id = id;
+                        input.className = "h-4 w-4 mt-0.5 shrink-0";
+                        input.checked = Boolean(option.value);
+                        input.addEventListener("change", () => save(option.key, input.checked));
+
+                        row.appendChild(input);
+                        row.appendChild(label(option, id));
+                        return row;
+                    }
+
+                    // Numbers with a known range get a slider; anything else a
+                    // plain field.
+                    const slider = option.type === "number" && option.min !== undefined && option.max !== undefined;
+
+                    row.className = "flex flex-col gap-1";
+
+                    const heading = document.createElement("div");
+                    heading.className = "flex items-center justify-between gap-2";
+                    heading.appendChild(label(option, id));
+                    row.appendChild(heading);
+
+                    const input = document.createElement("input");
+                    input.id = id;
+
+                    if (slider) {
+                        input.type = "range";
+                        input.className = "w-full accent-primary";
+                        input.min = option.min;
+                        input.max = option.max;
+                        input.step = option.step;
+                        input.value = option.value;
+
+                        const readout = document.createElement("span");
+                        readout.className = "text-[10px] font-mono text-secondary shrink-0";
+                        readout.textContent = input.value;
+                        heading.appendChild(readout);
+
+                        input.addEventListener("input", () => {
+                            readout.textContent = input.value;
+                            save(option.key, Number(input.value));
+                        });
+                    } else {
+                        input.type = option.type === "number" ? "number" : (option.secret ? "password" : "text");
+                        input.className = "bg-surface-container-lowest border-none text-xs font-mono text-secondary px-3 py-2 focus:ring-1 focus:ring-primary";
+
+                        if (option.type === "number") {
+                            input.step = option.step;
+                        }
+                        input.value = option.value;
+
+                        input.addEventListener("input", () => {
+                            if (option.type !== "number") {
+                                save(option.key, input.value);
+                            } else if (input.value !== "" && Number.isFinite(Number(input.value))) {
+                                // Half-typed numbers ("", "-") aren't saved.
+                                save(option.key, Number(input.value));
+                            }
+                        });
+                    }
+
+                    row.appendChild(input);
+                    return row;
+                }
+
+                const groups = new Map();
+                for (const option of options) {
+                    if (!groups.has(option.group)) {
+                        groups.set(option.group, []);
+                    }
+                    groups.get(option.group).push(option);
+                }
+
+                for (const [name, groupOptions] of groups) {
+                    const heading = document.createElement("p");
+                    heading.className = "text-[10px] font-bold uppercase tracking-[0.2em] text-primary pt-2 first:pt-0";
+                    heading.textContent = name;
+                    container.appendChild(heading);
+
+                    for (const option of groupOptions) {
+                        container.appendChild(control(option));
+                    }
+                }
+            }
+
+            function formatBytes(bytes) {
+                if (bytes === 0) return "0 B";
+                const k = 1024;
+                const sizes = ["B", "KB", "MB", "GB"];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return (bytes / Math.pow(k, i)).toFixed(1) + " " + sizes[i];
+            }
+
+            // --- Launcher updates (separate from the game patch above) ------
+            (async () => {
+                const statusEl = document.getElementById("launcherUpdateStatus");
+                const btn = document.getElementById("launcherUpdateBtn");
+
+                document.getElementById("launcherVersion").innerText =
+                    "v" + (await window.api.getAppVersion());
+
+                async function refresh() {
+                    const info = await window.api.checkLauncherUpdate();
+
+                    if (info.unavailable) {
+                        statusEl.innerText = "Could not reach the update server.";
+                        return;
+                    }
+
+                    if (info.updateRequired) {
+                        statusEl.innerText = `Version ${info.version} is required — this build is no longer supported.`;
+                    } else if (info.updateAvailable) {
+                        statusEl.innerText = `Version ${info.version} is available.`;
+                    } else {
+                        statusEl.innerText = "The launcher is up to date.";
+                    }
+                }
+
+                // electron-updater only runs in a packaged build, so in dev this
+                // reports status from the API alone.
+                window.api.onUpdateStatus(status => {
+                    if (status.state === "downloading") {
+                        statusEl.innerText = `Downloading update… ${status.percent}%`;
+                    } else if (status.state === "ready") {
+                        statusEl.innerText = `Version ${status.version} downloaded.`;
+                        btn.innerText = "Restart to install";
+                        btn.disabled = false;
+                        btn.onclick = () => window.api.installUpdate();
+                    } else if (status.state === "error") {
+                        statusEl.innerText = "Update failed: " + status.error;
+                    }
+                });
+
+                btn.addEventListener("click", async () => {
+                    if (btn.innerText === "Restart to install") return;
+
+                    btn.disabled = true;
+                    statusEl.innerText = "Checking…";
+                    await refresh();
+                    const res = await window.api.checkForUpdates();
+
+                    if (!res.success && res.error) {
+                        statusEl.innerText += ` (${res.error})`;
+                    }
+
+                    btn.disabled = false;
+                });
+
+                refresh();
+            })();
+            </script>
+    </body></html>

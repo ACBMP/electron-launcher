@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+        <meta charset="utf-8"/>
+        <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https:; connect-src https://api.assassins.network https://*.assassins.network; base-uri 'none'; form-action 'none'"/>
+        <link href="vendor/fonts.css" rel="stylesheet"/>
+        <link href="vendor/tailwind.css" rel="stylesheet"/>
+    </head>
+    <body style="display:none;" class="bg-background min-h-screen flex flex-col digital-brutalist-bg">
+        <!-- Auth Shell Suppression: No TopAppBar or Footer per JSON instructions for Login screens -->
+        <main class="flex-grow flex items-center justify-center p-6 md:p-12">
+            <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-12 gap-0 border border-outline-variant/15">
+                <!-- Branding/Identity Column -->
+                <div class="md:col-span-5 bg-surface-container p-8 md:p-12 flex flex-col justify-between border-r border-outline-variant/15">
+                    <div>
+                        <div class="mb-16">
+                            <img src="assets/an_logo_white.png" alt="AN Logo" class="h-48 drop-shadow-[0_0_12px_rgba(0,245,255,0.35)]">
+                        </div>
+                        <h1 class="font-headline text-5xl md:text-7xl font-bold tracking-tighter text-white leading-none uppercase mb-4">
+                            Login
+                        </h1>
+                        <p class="font-label text-xs uppercase tracking-[0.2em] text-on-surface-variant font-medium">
+                        Assassins' <span class="text-primary">Network</span>
+                        </p>
+                    </div>
+                    <div class="hidden md:block">
+                        <div class="space-y-4">
+                            <div class="h-px bg-outline-variant/30 w-12"></div>
+                            <p class="font-label text-[10px] uppercase tracking-widest leading-relaxed text-on-surface-variant max-w-[200px]">
+                            Sign in to continue.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Login Form Column -->
+                <div class="md:col-span-7 bg-surface p-8 md:p-12 flex flex-col justify-center">
+                    <form class="space-y-8">
+                        <!-- Form Header Mobile Only -->
+                        <div class="md:hidden mb-8">
+                            <h2 class="font-headline text-2xl font-bold uppercase tracking-tighter text-white">Sign In</h2>
+                        </div>
+                        <!-- Input Fields -->
+                        <div class="space-y-6">
+                            <div class="group">
+                                <label class="block font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant mb-2 group-focus-within:text-primary transition-colors" for="identifier">
+                                    Username
+                                </label>
+                                <input class="w-full bg-surface-container-lowest border-0 p-4 text-white font-body focus:ring-1 focus:ring-primary placeholder:text-zinc-700 transition-all" id="username" name="username" placeholder="USERNAME" type="text"/>
+                            </div>
+                            <div class="group">
+                                <label class="block font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant mb-2 group-focus-within:text-primary transition-colors" for="access-key">
+                                    Password
+                                </label>
+                                <div class="relative">
+                                    <input class="w-full bg-surface-container-lowest border-0 p-4 text-white font-body focus:ring-1 focus:ring-primary placeholder:text-zinc-700 transition-all" id="password" name="password" placeholder="••••••••••••••••" type="password"/>
+                                    <button class="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-white transition-colors" type="button">
+                                        <span class="material-symbols-outlined text-sm" data-icon="visibility">visibility</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Options -->
+                        <div class="flex items-center space-x-3 group cursor-pointer">
+                            <div class="relative flex items-center">
+                                <input class="peer h-4 w-4 rounded-none border-outline-variant bg-surface-container-lowest text-primary focus:ring-0 focus:ring-offset-0 checked:bg-primary transition-all" type="checkbox" id="rememberMe" checked/></div>
+                            <label class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant cursor-pointer group-hover:text-white transition-colors" for="rememberMe">
+                                Remember Me
+                            </label>
+                        </div>
+                        <!-- Actions -->
+                        <div class="pt-4 flex flex-col space-y-4">
+                            <!-- Primary: Discord OAuth -->
+                            <button class="w-full bg-primary text-on-primary font-headline font-bold uppercase py-4 tracking-tighter hover:bg-secondary-fixed-dim active:scale-[0.98] transition-all flex justify-between items-center px-6 disabled:opacity-50" type="button" id="discordLoginBtn" onclick="loginWithDiscord()">
+                                <span>Login with Discord</span>
+                                <span class="material-symbols-outlined" data-icon="login">login</span>
+                            </button>
+                            <!-- Consent happens in the system browser, where a
+                                 closed tab tells us nothing — the user needs an
+                                 explicit way to abandon the attempt. -->
+                            <button class="hidden w-full text-on-surface-variant font-label text-[10px] font-medium uppercase py-2 tracking-widest hover:text-white transition-colors" type="button" id="cancelDiscordBtn" onclick="window.api.cancelDiscordLogin()">
+                                Cancel
+                            </button>
+                            <!-- Divider -->
+                            <div class="flex items-center gap-4 py-1">
+                                <div class="h-px bg-outline-variant/30 flex-grow"></div>
+                                <span class="font-label text-[9px] uppercase tracking-[0.2em] text-on-surface-variant">or use credentials</span>
+                                <div class="h-px bg-outline-variant/30 flex-grow"></div>
+                            </div>
+                            <!-- Secondary: username + password -->
+                            <button class="w-full bg-surface-container-highest text-on-surface font-headline font-bold uppercase py-4 tracking-tighter hover:bg-zinc-700 active:scale-[0.98] transition-all flex justify-between items-center px-6 border border-outline-variant/10" type="button" onclick="login()">
+                                <span>Sign In</span>
+                                <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+                            </button>
+                            <div id="status" class="text-red-500 text-sm font-label uppercase tracking-wider"></div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <button class="bg-surface-container-highest text-on-surface font-label text-[10px] font-bold uppercase py-4 tracking-widest hover:bg-zinc-700 transition-colors border border-outline-variant/10" type="button" onclick="window.api.openRegisterPage()">
+                                    Register
+                                </button>
+                                <button class="text-on-surface-variant font-label text-[10px] font-medium uppercase py-4 tracking-widest hover:text-white transition-colors text-left pl-2" type="button" onclick="window.api.openExternal('https://discord.gg/Th5rm6qz5u')">
+                                    Need help?
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    <!-- Data Visualizer Decoration -->
+                    <div class="mt-12 opacity-20 hidden md:block">
+                        <div class="flex items-end space-x-1 h-8">
+                            <div class="bg-primary w-1 h-4"></div>
+                            <div class="bg-primary w-1 h-6"></div>
+                            <div class="bg-primary w-1 h-3"></div>
+                            <div class="bg-primary w-1 h-8"></div>
+                            <div class="bg-primary w-1 h-5"></div>
+                            <div class="bg-primary w-1 h-7"></div>
+                            <div class="bg-primary w-1 h-2"></div>
+                            <div class="bg-primary w-1 h-6"></div>
+                            <div class="bg-primary w-1 h-4"></div>
+                            <div class="bg-primary w-1 h-5"></div>
+                        </div>
+                        <p class="font-label text-[8px] uppercase tracking-[0.3em] mt-2 text-on-surface-variant">Secure connection</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <!-- Contextual Footer (Not the Shared Component, but a task-specific minimal version) -->
+        <div class="px-8 py-6 flex justify-between items-center opacity-50">
+            <div class="text-[9px] font-label uppercase tracking-widest text-on-surface-variant">
+                Assassins' Network Launcher
+            </div>
+            <div class="flex space-x-6">
+                <span class="text-[9px] font-label uppercase tracking-widest text-on-surface-variant hover:text-white cursor-pointer" onclick="window.api.openExternal('https://discord.gg/Th5rm6qz5u')">Support</span>
+                <span class="text-[9px] font-label uppercase tracking-widest text-on-surface-variant hover:text-white cursor-pointer" onclick="window.api.openExternal('https://assassins.network')">Website</span>
+            </div>
+        </div>
+        <script>
+            const status = () => document.getElementById("status");
+
+            function showError(message) {
+                const el = status();
+                el.style.color = "";
+                el.innerText = message;
+            }
+
+            async function persistRememberMe() {
+                // Always record the choice (both true and false) so unchecking
+                // the box actually disables auto-login on the next launch.
+                const rememberMe = document.getElementById("rememberMe").checked;
+                await window.api.setConfig({ rememberMe });
+            }
+
+            async function login() {
+                const username = document.getElementById("username").value;
+                const password = document.getElementById("password").value;
+
+                const res = await window.api.login(username, password);
+
+                if (res.success) {
+                    await persistRememberMe();
+                    await window.api.openPlayPage();
+                } else {
+                    showError(res.error || "Login failed");
+                }
+            }
+
+            async function loginWithDiscord() {
+                const btn = document.getElementById("discordLoginBtn");
+                const cancel = document.getElementById("cancelDiscordBtn");
+                btn.disabled = true;
+                cancel.classList.remove("hidden");
+                status().style.color = "";
+                status().innerText = "Continue in your browser...";
+
+                try {
+                    const res = await window.api.discordLogin();
+
+                    if (res.success) {
+                        await persistRememberMe();
+                        await window.api.openPlayPage();
+                    } else if (res.needsRegistration) {
+                        // Verified Discord account with no player yet. The
+                        // ticket is already held by the main process, so send
+                        // them straight to the details step.
+                        await window.api.openRegisterPage();
+                    } else if (res.error === "cancelled") {
+                        status().innerText = "";
+                    } else {
+                        showError(res.error || "Discord login failed");
+                    }
+                } finally {
+                    btn.disabled = false;
+                    cancel.classList.add("hidden");
+                }
+            }
+
+            // Silent auto-login: if we have a remembered, still-valid session,
+            // skip the form entirely and go straight to the play page.
+            async function autoLogin() {
+                try {
+                    const config = await window.api.getConfig();
+
+                    // Treat a stored session as remembered unless the user
+                    // explicitly opted out (rememberMe === false).
+                    if (config.rememberMe !== false && config.token) {
+                        const session = await window.api.validateSession();
+
+                        if (session.success) {
+                            await window.api.openPlayPage();
+                            return;
+                        }
+                    }
+                } catch (err) {
+                    console.error("Auto login failed:", err);
+                }
+
+                // No valid session — reveal the login form.
+                document.body.style.display = "block";
+            }
+
+            autoLogin();
+        </script>
+    </body></html>

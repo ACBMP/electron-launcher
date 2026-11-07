@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+    <head>
+        <meta charset="utf-8"/>
+        <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https:; connect-src https://api.assassins.network https://*.assassins.network; base-uri 'none'; form-action 'none'"/>
+        <link href="vendor/fonts.css" rel="stylesheet"/>
+        <link href="vendor/tailwind.css" rel="stylesheet"/>
+        <script src="vendor/chart.umd.min.js"></script>
+    </head><body class="bg-surface text-on-surface font-body min-h-screen flex flex-col">
+
+        <!-- HEADER -->
+        <!-- TopAppBar -->
+        <header class="fixed top-0 left-0 w-full z-50 bg-surface-container-low/85 backdrop-blur-md border-b border-outline-variant/60 flex justify-between items-center px-8 py-6">
+            <div class="flex items-center h-full">
+                <img
+                        src="assets/an_logo_white.png"
+                        alt="AN Logo"
+                        class="h-10 object-contain drop-shadow-[0_0_12px_rgba(0,245,255,0.35)]"
+                        >
+            </div>
+                <nav class="absolute left-1/2 transform -translate-x-1/2  hidden md:flex items-center space-x-12">
+                    <a class="font-headline uppercase tracking-tighter font-bold text-sm text-zinc-500 hover:text-zinc-300 transition-colors active:scale-95 transition-transform" href="#" onclick="window.api.openPlayPage()">PLAY</a>
+                    <a class="font-headline uppercase tracking-tighter font-bold text-sm text-zinc-500 hover:text-zinc-300 transition-colors active:scale-95 transition-transform" href="#" onclick="window.api.openStatsPage()">AN</a>
+                    <a class="font-headline uppercase tracking-tighter font-bold text-sm text-white border-b-2 border-white pb-1 active:scale-95 transition-transform" href="#" onclick="window.api.openNewsPage()">NEWS</a>
+                    <a class="font-headline uppercase tracking-tighter font-bold text-sm text-zinc-500 hover:text-zinc-300 transition-colors active:scale-95 transition-transform" href="#" onclick="window.api.openSettingsPage()">SETTINGS</a>
+                </nav>
+                <div class="flex items-center space-x-6">
+                    <button class="material-symbols-outlined text-white hover:bg-zinc-800 transition-all duration-150 p-2 active:scale-95" data-icon="groups" id="discordButton">groups</button>
+                    <button class="material-symbols-outlined text-white hover:bg-zinc-800 transition-all duration-150 p-2 active:scale-95" data-icon="language" id="websiteButton">language</button>
+                </div>
+        </header>
+
+        <!-- MAIN -->
+        <main class="pt-32 px-8 pb-16 max-w-[1400px] mx-auto w-full flex flex-col gap-8">
+
+            <!-- TITLE -->
+            <div>
+                <h1 class="font-headline text-6xl font-bold uppercase tracking-tighter">AN: News</h1>
+                <p class="text-sm uppercase tracking-widest text-on-surface-variant">
+                Updates, Patch Notes & Network Announcements
+                </p>
+            </div>
+
+            <div id="newsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+
+            <div id="newsModal" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center">
+                <div class="bg-surface-container p-6 max-w-3xl w-full max-h-[80vh] overflow-y-auto relative">
+
+                    <!-- Close button -->
+                    <button id="closeNewsModal"
+                            class="absolute top-4 right-4 text-xs uppercase text-on-surface-variant hover:text-white">
+                        Close
+                    </button>
+
+                    <!-- Content goes here -->
+                    <div id="newsModalContent"></div>
+
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="fixed bottom-0 left-0 w-full flex justify-between items-center px-8 py-3 z-50 bg-surface-container-low/85 backdrop-blur-md border-t border-outline-variant/60">
+            <div class="font-inter text-[10px] uppercase tracking-[0.2em] font-medium text-zinc-100 dark:text-zinc-200" id="footerText">
+            </div>
+            <div class="flex space-x-8">
+                <a class="font-inter text-[10px] uppercase tracking-[0.2em] font-medium text-zinc-600 hover:text-white transition-colors cursor-pointer" onclick="window.api.openExternal('https://assassins.network')">Website</a>
+                <a class="font-inter text-[10px] uppercase tracking-[0.2em] font-medium text-zinc-600 hover:text-white transition-colors cursor-pointer" onclick="window.api.openExternal('https://discord.gg/Th5rm6qz5u')">Discord</a>
+            </div>
+        </footer>
+
+        <!-- SCRIPT -->
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+
+                loadNews();
+
+                const modal = document.getElementById("newsModal");
+
+                document.addEventListener("click", (e) => {
+                    if (e.target.id === "closeNewsModal") {
+                        modal.classList.add("hidden");
+                    }
+
+                    // click outside closes modal
+                    if (e.target.id === "newsModal") {
+                        modal.classList.add("hidden");
+                    }
+                });
+            });
+
+            async function loadNews() {
+                try {
+                    const res = await fetch("https://api.assassins.network/news");
+
+                    if (!res.ok) {
+                        throw new Error("Failed to fetch news");
+                    }
+
+                    const articles = await res.json();
+                    const config = await window.api.getConfig();
+                    renderNews(articles);
+                    config.lastSeenNews = articles[0]._id;
+                    await window.api.setConfig(config);
+
+                } catch (err) {
+                    console.error(err);
+                    renderError("Failed to load news.");
+                }
+            }
+            function renderNews(articles) {
+                const container = document.getElementById("newsContainer");
+                container.innerHTML = "";
+
+                articles.slice(0, 5).forEach((article, index) => {
+                    const el = document.createElement("div");
+
+                    el.className = `
+            bg-surface-container-low p-5 cursor-pointer
+            hover:bg-surface-container-high transition
+            flex flex-col gap-3
+        `;
+
+                    // FUTURE: image support
+                    const imageHTML = article.image
+                        ? `<img src="${article.image}" class="w-full h-40 object-cover mb-2">`
+                        : "";
+
+                    el.innerHTML = `
+            ${imageHTML}
+
+            <h3 class="font-headline text-xl font-bold uppercase">
+                ${article.title}
+            </h3>
+
+            <div class="text-xs text-on-surface-variant line-clamp-4">
+                ${article.content}
+            </div>
+        `;
+                    if (index === 0) {
+                        el.classList.add("md:col-span-2", "p-8");
+                    }
+
+                    // click → open full article (for now external or modal later)
+                    el.addEventListener("click", () => {
+                        openArticle(article);
+                    });
+
+                    container.appendChild(el);
+                });
+            }
+            function openArticle(article) {
+                const modal = document.getElementById("newsModal");
+                const content = document.getElementById("newsModalContent");
+
+                content.innerHTML = `
+        <h2 class="text-2xl font-headline font-bold mb-4">${article.title}</h2>
+        ${article.image ? `<img src="${article.image}" class="mb-4 w-full">` : ""}
+        <div class="text-sm">${article.content}</div>
+    `;
+
+                modal.classList.remove("hidden");
+            }
+            function renderError(msg) {
+                const container = document.getElementById("newsContainer");
+                container.innerHTML = `
+        <div class="text-red-400 text-sm uppercase tracking-widest">
+            ${msg}
+        </div>
+    `;
+            }
+        </script>
+
+    </body>
+</html>

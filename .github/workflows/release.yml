@@ -1,0 +1,50 @@
+name: Release
+
+# Publishes installers to a GitHub Release (which also serves the
+# electron-updater feed) when a version tag is pushed.
+#
+# Flow: bump "version" in package.json, commit, then:
+#   git tag v1.0.1 && git push origin v1.0.1
+# electron-builder creates/updates a DRAFT release for that version on each
+# platform job; review it on the Releases page and publish it to go live.
+# Publishing it then triggers announce.yml, which tells the API about the new
+# version so already-installed launchers show the update banner.
+#
+# Native runners (Ubuntu for Linux, Windows for the NSIS installer) mean no
+# wine is needed. GITHUB_TOKEN has enough scope to manage this repo's releases.
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: --linux
+          - os: windows-latest
+            platform: --win
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run build:css
+
+      - name: Build & publish
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx electron-builder ${{ matrix.platform }} --publish always

@@ -1,0 +1,55 @@
+name: Announce release
+
+# Tells the API about a new launcher version so the in-app update banner
+# appears. Without this step a release exists on GitHub but no running launcher
+# ever learns about it.
+#
+# Deliberately triggered by `release: published` — i.e. the moment a human
+# clicks "Publish release" on the draft that release.yml built — and NOT by the
+# build finishing. Announcing a draft would point every player at a release page
+# that isn't public yet.
+#
+# Never touches minimumVersion: that flag stops older launchers from playing at
+# all, so raising it stays a deliberate manual POST (see docs/AUTH_API.md).
+#
+# Requires the AN_API_KEY secret (an api_key with privilege 5). If it isn't set
+# the job warns and skips rather than failing a release that otherwise worked.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to announce, e.g. v1.0.1'
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  announce:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Publish version info to the API
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+          API_URL: ${{ vars.AN_API_URL || 'https://api.assassins.network' }}
+          API_KEY: ${{ secrets.AN_API_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${API_KEY:-}" ]; then
+            echo "::warning::AN_API_KEY is not set — skipping. The launcher will not show an update banner for ${TAG} until you POST /launcher/latest by hand."
+            exit 0
+          fi
+
+          # Written outside the checkout so it can't be mistaken for a source file.
+          release="${RUNNER_TEMP:-.}/release.json"
+
+          gh api "repos/${REPO}/releases/tags/${TAG}" > "$release"
+
+          python3 .github/scripts/announce_release.py "$release"

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en">
+    <head>
+        <meta charset="utf-8"/>
+        <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https:; connect-src https://api.assassins.network https://*.assassins.network; base-uri 'none'; form-action 'none'"/>
+        <link href="vendor/fonts.css" rel="stylesheet"/>
+        <link href="vendor/tailwind.css" rel="stylesheet"/>
+        <script src="vendor/chart.umd.min.js"></script>
+    </head>
+    <body class="bg-surface text-on-surface selection:bg-primary selection:text-on-primary">
+        <!-- TopAppBar -->
+        <header class="fixed top-0 left-0 w-full z-50 bg-surface-container-low/85 backdrop-blur-md border-b border-outline-variant/60 flex justify-between items-center px-8 py-6">
+            <div class="flex items-center h-full">
+                <img
+                        src="assets/an_logo_white.png"
+                        alt="AN Logo"
+                        class="h-10 object-contain drop-shadow-[0_0_12px_rgba(0,245,255,0.35)]"
+                        >
+            </div>
+                <nav class="absolute left-1/2 transform -translate-x-1/2 hidden md:flex items-center space-x-12">
+                    <a class="font-headline uppercase tracking-tighter font-bold text-sm text-zinc-500 hover:text-zinc-300 transition-colors active:scale-95 transition-transform" href="#" onclick="window.api.openPlayPage()">PLAY</a>
+                    <a class="font-headline uppercase tracking-tighter font-bold text-sm text-white border-b-2 border-white pb-1 active:scale-95 transition-transform" href="#" onclick="window.api.openStatsPage()">AN</a>
+                    <a class="font-headline uppercase tracking-tighter font-bold text-sm text-zinc-500 hover:text-zinc-300 transition-colors active:scale-95 transition-transform" href="#" onclick="window.api.openNewsPage()">NEWS</a>
+                    <a class="font-headline uppercase tracking-tighter font-bold text-sm text-zinc-500 hover:text-zinc-300 transition-colors active:scale-95 transition-transform" href="#" onclick="window.api.openSettingsPage()">SETTINGS</a>
+                </nav>
+                <div class="flex items-center space-x-6">
+                    <button class="material-symbols-outlined text-white hover:bg-zinc-800 transition-all duration-150 p-2 active:scale-95" data-icon="groups" id="discordButton" data-url="https://discord.gg/Th5rm6qz5u">groups</button>
+                    <button class="material-symbols-outlined text-white hover:bg-zinc-800 transition-all duration-150 p-2 active:scale-95" data-icon="language" id="websiteButton" data-url="https://assassins.network">language</button>
+                </div>
+        </header>
+        <main class="pt-32 pb-24 px-8 max-w-[1600px] mx-auto grid grid-cols-12 gap-8">
+            <!-- Sidebar Navigation / Mode Selector Area -->
+            <aside class="col-span-12 lg:col-span-3 flex flex-col gap-8">
+                <section class="bg-surface-container p-6">
+                    <label class="block font-headline text-[10px] uppercase tracking-[0.2em] text-on-surface-variant mb-4">MODE</label>
+                    <div class="relative group">
+                        <button id="modeDropdown"
+                                class="w-full bg-surface-container-lowest px-4 py-4 text-left font-headline font-bold text-lg flex justify-between items-center border border-transparent">
+
+                            <span id="selectedMode" class="uppercase">LOADING...</span>
+                            <span class="material-symbols-outlined">expand_more</span>
+                        </button>
+
+                        <div id="modeList" class="mt-2 space-y-1 hidden"></div>
+                    </div>
+                </section>
+                <!-- User Stats Block -->
+                <section class="bg-surface-container-lowest p-6 border-l-4 border-primary">
+                    <h3 class="font-headline text-[10px] uppercase tracking-[0.2em] text-on-surface-variant mb-6">PERSONAL METRICS</h3>
+                    <div class="space-y-6">
+                        <div>
+                            <p class="text-[10px] uppercase font-label tracking-widest text-on-surface-variant">CURRENT RATING</p>
+                            <p class="text-4xl font-headline font-black tracking-tighter" id="mmr">--- <span class="text-xs font-medium tracking-normal text-on-surface-variant">MMR</span></p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] uppercase font-label tracking-widest text-on-surface-variant">WIN RATE</p>
+                            <p class="text-4xl font-headline font-black tracking-tighter text-primary" id="winrate">---%</p>
+                        </div>
+                    </div>
+                        <div class="pt-4 grid grid-cols-2 gap-4">
+                            <div class="bg-surface-container p-3">
+                                <span class="text-[9px] block text-on-surface-variant uppercase tracking-tighter">Matches</span>
+                                <span class="font-headline font-bold" id="matches">---</span>
+                            </div>
+                            <div class="bg-surface-container p-3">
+                                <span class="text-[9px] block text-on-surface-variant uppercase tracking-tighter">K/D</span>
+                                <span class="font-headline font-bold text-primary" id="kd">---</span>
+                            </div>
+                        </div>
+                        <div class="pt-4 grid grid-cols-2 gap-4">
+                            <div class="bg-surface-container p-3">
+                                <span class="text-[9px] block text-on-surface-variant uppercase tracking-tighter">Avg. Score</span>
+                                <span class="font-headline font-bold" id="average">---</span>
+                            </div>
+                            <div class="bg-surface-container p-3">
+                                <span class="text-[9px] block text-on-surface-variant uppercase tracking-tighter">Highscore</span>
+                                <span class="font-headline font-bold text-primary" id="highscore">---</span>
+                            </div>
+                        </div>
+                </section>
+                <div class="bg-surface-container p-6 mt-6">
+                    <h3 class="font-headline text-[10px] uppercase tracking-[0.2em] text-on-surface-variant mb-4">HISTORY</h3>
+                    <canvas id="historyChart" class="w-full h-40"></canvas>
+                </div>
+            </aside>
+            <!-- Main Leaderboard Table -->
+            <section class="col-span-12 lg:col-span-6 space-y-4">
+                <div class="flex justify-between items-end mb-6"><div>
+                        <h2 class="font-headline text-5xl font-black tracking-tighter uppercase leading-none" id="rankedName">AN: RANKED</h2>
+                        <p class="font-label text-xs uppercase tracking-[0.3em] text-on-surface-variant mt-2" id="season"></p>
+                    </div>
+                </div>
+                <div class="overflow-hidden">
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="bg-surface-container-lowest text-on-surface-variant text-[10px] uppercase tracking-[0.2em] font-medium">
+                                <th class="py-4 px-6 text-left w-20">RANK</th>
+                                <th class="py-4 px-6 text-left">PLAYER</th>
+                                <th class="py-4 px-6 text-right">RATING</th>
+                                <th class="py-4 px-6 text-right w-32">TREND</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard" class="font-label text-sm">
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            <!-- Achievements Block -->
+            <aside class="col-span-12 lg:col-span-3 space-y-8">
+                <section class="bg-surface-container p-6">
+                    <h3 class="font-headline text-[10px] uppercase tracking-[0.2em] text-on-surface-variant mb-6">ACHIEVEMENTS</h3><div id="achievements" class="space-y-6">
+                    <button class="w-full mt-8 py-3 bg-surface-container-highest text-on-surface font-headline text-[10px] uppercase tracking-widest border border-outline-variant/20 hover:bg-primary hover:text-on-primary transition-all">
+                        VIEW_ALL_LOGS
+                    </button>
+                </section>
+            </aside>
+        </main>
+        <!-- Footer -->
+        <footer class="fixed bottom-0 left-0 w-full flex justify-between items-center px-8 py-3 z-50 bg-surface-container-low/85 backdrop-blur-md border-t border-outline-variant/60">
+            <div class="font-inter text-[10px] uppercase tracking-[0.2em] font-medium text-zinc-100 dark:text-zinc-200" id="footerText">
+            </div>
+            <div class="flex space-x-8">
+                <a class="font-inter text-[10px] uppercase tracking-[0.2em] font-medium text-zinc-600 hover:text-white transition-colors cursor-pointer" onclick="window.api.openExternal('https://assassins.network')">Website</a>
+                <a class="font-inter text-[10px] uppercase tracking-[0.2em] font-medium text-zinc-600 hover:text-white transition-colors cursor-pointer" onclick="window.api.openExternal('https://discord.gg/Th5rm6qz5u')">Discord</a>
+            </div>
+        </footer>
+        <script>
+            let currentMode = "escort";
+            let historyChart = null;
+
+            document.addEventListener("DOMContentLoaded", () => {
+                document.getElementById("discordButton").addEventListener("click", () => {
+                    window.api.openExternal("https://discord.gg/Th5rm6qz5u");
+                });
+
+                document.getElementById("websiteButton").addEventListener("click", () => {
+                    window.api.openExternal("https://assassins.network");
+                });
+                document.querySelectorAll("[data-url]").forEach(btn => {
+                    btn.addEventListener("click", () => {
+                        window.api.openExternal(btn.dataset.url);
+                    });
+                });
+
+            });
+
+            function getModeData(data, mode) {
+                const suffixes = ["mmr", "rank", "games", "stats", "rankchange"];
+                const result = {};
+
+                suffixes.forEach(suf => {
+                    result[suf] = data[`${mode}${suf}`];
+                });
+
+                if (result[`rank`] == 0) {
+                    result[`rank`] = "TBD";
+                }
+
+                return result;
+            }
+
+            async function loadStats(username = null) {
+                const config = await window.api.getConfig();
+                if (username === null) {
+                    username = config.username;
+                }
+
+                const boards = await window.api.getBoards();
+                renderModes(boards, config);
+
+                // document.getElementById("season").innerText = `Season ${boards.season}`;
+
+                const data = await window.api.getStats(username);
+
+                if (!data) return;
+
+                console.log(currentMode);
+                const modeData = getModeData(data, currentMode);
+                console.log(modeData);
+                if (!modeData) return;
+
+                document.getElementById("mmr").innerText = Math.round(modeData.mmr);
+
+                const winrate = modeData.games.total > 0
+                    ? ((modeData.games.won / modeData.games.total) * 100).toFixed(1)
+                    : 0;
+
+                document.getElementById("winrate").innerText = winrate + "%";
+                document.getElementById("matches").innerText = modeData.games.total;
+                document.getElementById("kd").innerText = (modeData.stats.kills / modeData.stats.deaths).toFixed(2);
+                document.getElementById("average").innerText = Math.round(modeData.stats.totalscore / modeData.games.total);
+                document.getElementById("highscore").innerText = modeData.stats.highscore;
+                document.getElementById("rankedName").innerText = `AN: RANKED - ${username}`;
+
+                renderHistoryGraph(data[`${currentMode}history`]);
+
+                if (username === config.username) {
+                    renderPlayerRow(username, data);
+                }
+
+                renderAchievements(data);
+            }
+
+            async function renderPlayerRow(mainName, mainData) {
+                const table = document.getElementById("leaderboard");
+                table.innerHTML = "";
+
+                const boardData = await window.api.getBoard(currentMode);
+                var i = 0;
+                var in_top = false;
+
+                for (i = 0; i < Math.min(10, boardData.length); i++) {
+                    const data = boardData[i];
+                    const modeData = getModeData(data, currentMode);
+                    const row = document.createElement("tr");
+                    if (data.name == mainName) {
+                        row.className = "bg-primary text-on-primary";
+                        in_top = true;
+                    } else {
+                        row.className = "bg-surface-container hover:bg-surface-container-high transition-colors";
+                    }
+                    row.setAttribute("onclick", `loadStats('${data.name}')`);
+
+                    row.innerHTML = `
+  <td class="py-5 px-6 font-headline font-bold">${modeData.rank}</td>
+  <td class="py-5 px-6 font-bold cursor-pointer">${data.name}</td>
+  <td class="py-5 px-6 text-right font-headline font-bold">${Math.round(modeData.mmr)}</td>
+  ${rankchangeIcon(modeData.rankchange)}
+`;
+
+
+                    table.appendChild(row);
+                }
+                if (!in_top) {
+                    const modeData = getModeData(mainData, currentMode);
+                    var row = document.createElement("tr");
+                    row.className = "border-y border-outline-variant/20";
+                    row.innerHTML = `
+                                <td class="py-2 text-center text-[10px] text-on-surface-variant tracking-[1em] uppercase" colspan="4">...</td>
+                                `;
+                    table.appendChild(row);
+                    var row = document.createElement("tr");
+                    row.class = "bg-surface-container-highest border-l-4 border-primary";
+                    row.setAttribute("onclick", `loadStats('${mainData.name}')`);
+                    row.innerHTML = `
+    <td class="py-5 px-6 font-headline font-black text-primary">${modeData.rank}</td>
+    <td class="py-5 px-6 font-bold">${mainData.name}</td>
+    <td class="py-5 px-6 text-right font-headline font-bold">${Math.round(modeData.mmr)}</td>
+    ${rankchangeIcon(modeData.rankchange)}
+    `;
+                    table.appendChild(row);
+                }
+            }
+
+            function rankchangeIcon(change) {
+                const base = `<td class="py-5 px-6 text-right `;
+                if (change > 0) return base + `text-muted-deep-green">⬆</td>`;
+                if (change < 0) return base + `text-muted-deep-red">⬇</td>`;
+                return base + `">—</td>`;
+            }
+
+            // Mode buttons
+            document.querySelectorAll("[data-mode]").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    currentMode = btn.dataset.mode;
+                    loadStats();
+                });
+            });
+
+            loadStats();
+
+            function renderAchievements(data) {
+                const container = document.getElementById("achievements");
+                container.innerHTML = "";
+
+                if (!data?.badges) return;
+
+                data.badges.slice().reverse().forEach(b => {
+                    const el = document.createElement("div");
+
+                    const medal = window.api.getMedalHTML(b);
+                    const text = window.api.getBadgeText(b);
+
+                    el.innerHTML = `
+            <div class="flex gap-4 items-center">
+                <div>${medal}</div>
+                <div>${text}</div>
+            </div>
+        `;
+
+                    container.appendChild(el);
+                });
+            }
+            function renderModes(boards, config) {
+                const list = document.getElementById("modeList");
+                const selected = document.getElementById("selectedMode");
+
+                list.innerHTML = "";
+
+                const entries = Object.entries(boards);
+
+                // restore saved mode OR fallback
+                const saved = config.selectedMode;
+                const initial = entries.find(([name, code]) => code === saved) || entries[0];
+
+                selected.innerText = initial[0];
+                currentMode = initial[1];
+
+                entries.forEach(([name, code]) => {
+                    const btn = document.createElement("button");
+
+                    btn.className = "w-full text-left px-4 py-2 text-sm font-label uppercase tracking-widest text-on-surface hover:bg-surface-container-highest transition-colors";
+
+                    btn.innerText = name;
+
+                    btn.onclick = async () => {
+                        selected.innerText = name;
+                        list.classList.add("hidden");
+
+                        currentMode = code;
+
+                        // persist
+                        config.selectedMode = code;
+                        await window.api.setConfig(config);
+
+                        loadStats(); // reload with new mode
+                    };
+
+                    list.appendChild(btn);
+                });
+            }
+            document.getElementById("modeDropdown").addEventListener("click", () => {
+                document.getElementById("modeList").classList.toggle("hidden");
+            });
+
+            function renderHistoryGraph(historyData) {
+                const ctx = document.getElementById('historyChart').getContext('2d');
+
+                if (historyChart) historyChart.destroy();
+
+                historyChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: historyData.dates,
+                        datasets: [{
+                            label: 'MMR',
+                            data: historyData.mmrs,
+                            borderColor: '#00f5ff',
+                            backgroundColor: 'rgba(0, 245, 255, 0.15)',
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: {
+                                ticks: { color: '#e2e2e8', font: { size: 10 } },
+                                grid: { color: '#2d323c' }
+                            },
+                            y: {
+                                ticks: { color: '#e2e2e8', font: { size: 10 } },
+                                grid: { color: '#2d323c' }
+                            }
+                        }
+                    }
+                });
+            }
+        </script>
+    </body></html>
