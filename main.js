@@ -1109,14 +1109,23 @@ ipcMain.handle('launch-game', async (_, config, username) => {
 
 	const exe = path.join(gameDir(config.installPath, game), 'ACBMP.exe');
 
-	// spawn() reports a missing or unrunnable binary as an 'error' event, not a
-	// throw. Unhandled, that event takes down the whole main process.
+	// spawn() reports some failures (ENOENT, EACCES, ...) as an 'error' event,
+	// which unhandled takes down the whole main process. Every other code —
+	// EPERM, or an exe blocked by antivirus, both common on Windows — is thrown
+	// synchronously instead, so both paths need handling.
 	return new Promise(resolve => {
-		const child = spawn(exe, [], {
-			cwd: path.dirname(exe),
-			detached: true,
-			stdio: 'ignore',
-		});
+		let child;
+
+		try {
+			child = spawn(exe, [], {
+				cwd: path.dirname(exe),
+				detached: true,
+				stdio: 'ignore',
+			});
+		} catch (error) {
+			resolve({success: false, error: `Could not start the game: ${error.message}`});
+			return;
+		}
 
 		child.once('error', error => {
 			resolve({success: false, error: `Could not start the game: ${error.message}`});
