@@ -401,7 +401,21 @@
                     await window.api.openSettingsPage();
                 } else if (state === "play") {
                     const selected = document.getElementById("selectedUser");
-                    const res = await window.api.launchGame(config, selected.innerText);
+                    // The launch takes a few seconds to confirm the game stayed
+                    // up; show that, and don't start a second copy meanwhile.
+                    state = "launching";
+                    document.querySelector("#playBtn span").innerText = launchesGame ? "LAUNCHING..." : "PREPARING...";
+                    let res;
+                    try {
+                        res = await window.api.launchGame(config, selected.innerText);
+                    } catch (error) {
+                        // An unexpected failure in the main process; without
+                        // this the click would silently do nothing.
+                        res = { success: false, error: error.message };
+                    } finally {
+                        state = "play";
+                        updateButton();
+                    }
                     if (!res.success) {
                         alert(res.error || "Could not launch the game");
                     } else if (res.manual) {
