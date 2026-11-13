@@ -1131,12 +1131,37 @@ ipcMain.handle('launch-game', async (_, config, username) => {
 			resolve({success: false, error: `Could not start the game: ${error.message}`});
 		});
 
+		// A process that starts and then dies at once (a crash on load, a
+		// missing DLL) looks like success to 'spawn'. Watch it briefly and
+		// report a failing exit; one that's still running is the game.
 		child.once('spawn', () => {
-			child.unref();
-			resolve({success: true});
+			const timer = setTimeout(() => {
+				child.removeAllListeners('exit');
+				child.unref();
+				resolve({success: true});
+			}, LAUNCH_GRACE_MS);
+
+			child.once('exit', (code, signal) => {
+				clearTimeout(timer);
+				console.log(`ACBMP.exe exited early: code=${code} signal=${signal}`);
+
+				// Exit 0 can be a legitimate hand-off, e.g. DRM relaunching
+				// the game through its own client.
+				if (code === 0) {
+					resolve({success: true});
+					return;
+				}
+
+				// Windows crash codes are NTSTATUS values; hex is what people
+				// can search for (0xC0000135 = missing DLL, and so on).
+				const shown = code === null ? signal : `0x${(code >>> 0).toString(16).toUpperCase()}`;
+				resolve({success: false, error: `The game closed right after starting (exit code ${shown}).`});
+			});
 		});
 	});
 });
+
+const LAUNCH_GRACE_MS = 5000;
 
 ipcMain.handle('open-play-page', () => {
 	mainWindow.loadFile(path.join(__dirname, 'play.html'));
