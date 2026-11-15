@@ -1079,7 +1079,10 @@ async function updateCredentials(installPath, username, token, game) {
 	await fs.promises.writeFile(
 		fPath,
 		writeIni(iniText, {
-			'Credentials.Username': username,
+			// claudia passes this to the game as /onlineUser:<name>, and the
+			// game's parser ends a value at the first space. A no-break space
+			// gets through, and acb2 turns it back into a real space.
+			'Credentials.Username': username.trim().replaceAll(' ', ' '),
 			'Credentials.Password': token,
 			'Network.RedirectHost': 'acb.assassins.network',
 		}),
