@@ -1085,6 +1085,9 @@ async function updateCredentials(installPath, username, token, game) {
 			'Credentials.Username': username.trim().replaceAll(' ', '\u00a0'),
 			'Credentials.Password': token,
 			'Network.RedirectHost': 'acb.assassins.network',
+			// The launcher has already signed the player in, so claudia's own
+			// login dialog would only ask for the same credentials again.
+			'UI.SkipConfigDialog': 'true',
 		}),
 	);
 }
