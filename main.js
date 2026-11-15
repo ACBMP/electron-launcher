@@ -645,14 +645,33 @@ ipcMain.handle('open-login-page', () => {
 // other place that touches game files has to agree on this.
 //
 // Players who already had the game often pick the game folder itself (the one
-// with ACBMP.exe in it) instead of a parent folder. Use that folder as-is
-// rather than creating a second copy inside it.
+// with ACBMP.exe or the retail exe in it) instead of a parent folder. Use that
+// folder as-is rather than creating a second copy inside it.
 function gameDir(installPath, game) {
 	const nested = path.join(installPath, game);
-	if (!fs.existsSync(nested) && fs.existsSync(path.join(installPath, 'ACBMP.exe'))) {
+	const isGameFolder = ['ACBMP.exe', 'AssassinsCreedBrotherhood.exe']
+		.some(name => fs.existsSync(path.join(installPath, name)));
+	if (!fs.existsSync(nested) && isGameFolder) {
 		return installPath;
 	}
 	return nested;
+}
+
+// The patch only delivers the multiplayer files; it goes on top of a retail
+// copy of the game, which has to supply these.
+const BASE_GAME_FILES = ['AssassinsCreedBrotherhood.exe', 'binkw32.dll', 'DataPC.forge'];
+
+function missingBaseGameFiles(dir) {
+	return BASE_GAME_FILES.filter(name => !fs.existsSync(path.join(dir, name)));
+}
+
+function baseGameError(dir) {
+	const missing = missingBaseGameFiles(dir);
+	if (missing.length === 0) {
+		return null;
+	}
+	return `${dir} is not an Assassin's Creed Brotherhood install (missing ${missing.join(', ')}). `
+		+ 'Choose the folder the game is installed in.';
 }
 
 // The patch manifest changes only when a patch is released, but every page
@@ -1099,6 +1118,11 @@ ipcMain.handle('launch-game', async (_, config, username) => {
 
 	const game = 'acb';
 
+	const notInstalled = baseGameError(gameDir(config.installPath, game));
+	if (notInstalled) {
+		return {success: false, error: notInstalled};
+	}
+
 	try {
 		applyGameSettings(config.installPath, game);
 		await updateCredentials(config.installPath, username, config.token, game);
@@ -1322,7 +1346,10 @@ ipcMain.handle('install-game', async (event, config, game) => {
         totalBytes = files.reduce((sum, f) => sum + f.size, 0);
 
         const gameFolder = gameDir(installPath, game);
-        fs.mkdirSync(gameFolder, { recursive: true });
+        const notInstalled = baseGameError(gameFolder);
+        if (notInstalled) {
+            throw new Error(notInstalled);
+        }
 
 		const totalFiles = files.length;
 		let completedFiles = 0;
