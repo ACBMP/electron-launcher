@@ -1088,6 +1088,8 @@ ipcMain.handle('set-game-settings', (_, game, values) => {
 	}
 });
 
+const GAME_PASSWORD_LENGTH = 32;
+
 // Writes the launching player's credentials into the game's claudia.ini. The
 // game authenticates to the server with these, so the password field carries
 // the player's session token (their api_key), not a literal password.
@@ -1102,7 +1104,10 @@ async function updateCredentials(installPath, username, token, game) {
 			// game's parser ends a value at the first space. A no-break space
 			// gets through, and acb2 turns it back into a real space.
 			'Credentials.Username': username.trim().replaceAll(' ', '\u00a0'),
-			'Credentials.Password': token,
+			// The game copies this into a 60-byte buffer and kills itself
+			// (0xC0000417) on anything longer, so it only gets the first
+			// GAME_PASSWORD_LENGTH characters; the API checks the same prefix.
+			'Credentials.Password': token.slice(0, GAME_PASSWORD_LENGTH),
 			'Network.RedirectHost': 'acb.assassins.network',
 			// The launcher has already signed the player in, so claudia's own
 			// login dialog would only ask for the same credentials again.
