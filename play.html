@@ -407,7 +407,7 @@
                     document.querySelector("#playBtn span").innerText = launchesGame ? "LAUNCHING..." : "PREPARING...";
                     let res;
                     try {
-                        res = await window.api.launchGame(config, selected.innerText);
+                        res = await window.api.launchGame(config, selected.textContent);
                     } catch (error) {
                         // An unexpected failure in the main process; without
                         // this the click would silently do nothing.
@@ -421,7 +421,7 @@
                     } else if (res.manual) {
                         showUpdateBanner({
                             icon: "task_alt",
-                            title: `Ready as ${selected.innerText}`,
+                            title: `Ready as ${selected.textContent}`,
                             detail: "Now start ACBMP.exe through Wine or Proton.",
                         });
                     }
