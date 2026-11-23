@@ -45,8 +45,8 @@ ipcMain.handle('pick-install-dir', async () => {
 
 function createWindow() {
 	mainWindow = new BrowserWindow({
-		width: 800,
-		height: 600,
+		width: 1600,
+		height: 900,
 		// assets/ is bundled into the app; build/ (buildResources) is not, so the
 		// runtime window icon must come from assets/.
 		icon: path.join(__dirname, 'assets', 'icon.png'),
